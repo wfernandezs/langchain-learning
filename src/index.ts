@@ -1,9 +1,6 @@
-import { config, validateConfig } from "./config";
-import { ChatOpenAI } from "@langchain/openai";
-import { PromptTemplate } from "@langchain/core/prompts";
+import { validateConfig } from "./config";
 import { createLinkedInGetterWithSearchTool } from "./tools/linkedinGetter";
 import { TavilySearchTool } from "./tools/tavilySearch";
-import { createLinkedInScraperBasic } from "./tools/linkedinScraper";
 
 async function iceBreakWith(name: string): Promise<string> {
   try {
@@ -16,41 +13,7 @@ async function iceBreakWith(name: string): Promise<string> {
 
     console.log(`🔗 LinkedIn URL found: ${linkedinUrl}`);
 
-    // Use the basic LinkedIn scraper
-    const scraper = createLinkedInScraperBasic();
-    const linkedinDataObj = await scraper._call(linkedinUrl);
-
-    // Use the scraped data as the information
-    const linkedinData = linkedinDataObj;
-
-    // Create summary template
-    const summaryTemplate = `
-    Given the LinkedIn information {information} about a person I want you to create:
-    1. A short summary
-    2. Two interesting facts about them
-    `;
-
-    const summaryPromptTemplate = PromptTemplate.fromTemplate(summaryTemplate);
-
-    // Create LLM
-    const llm = new ChatOpenAI({
-      temperature: 0,
-      modelName: "gpt-3.5-turbo",
-      openAIApiKey: config.openai.API_KEY,
-    });
-
-    // Create chain
-    const chain = summaryPromptTemplate.pipe(llm);
-
-    // Invoke the chain
-    const result = await chain.invoke({
-      information: linkedinData,
-    });
-
-    console.log("📋 Ice Breaker Result:");
-    console.log(result.content);
-
-    return result.content as string;
+    return linkedinUrl;
   } catch (error) {
     console.error("❌ Error in ice breaker:", error);
     return "Error creating ice breaker summary";
@@ -63,8 +26,7 @@ async function main() {
 
     validateConfig();
 
-    // Test ice breaker with Walter Fernandez Sanchez
-    await iceBreakWith("Walter Fernandez Sanchez");
+    await iceBreakWith("Walter Fernandez Peru");
   } catch (error) {
     console.error("❌ Error starting application:", error);
     process.exit(1);
