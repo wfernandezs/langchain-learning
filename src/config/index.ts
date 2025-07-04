@@ -28,5 +28,15 @@ export { isDevelopment, isProduction };
 export function validateConfig(): void {
   validateRequiredEnv(["OPENAI_API_KEY"]);
   validateOpenAIConfig();
+
+  // Validate Tavily API key if using Tavily tools
+  if (process.env.TAVILY_API_KEY) {
+    console.log("✅ Tavily API key found");
+  } else {
+    console.log(
+      "⚠️  Tavily API key not found - Tavily tools will not be available"
+    );
+  }
+
   console.log("✅ All configurations validated successfully");
 }

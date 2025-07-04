@@ -1,6 +1,61 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { config, validateConfig } from "./config";
+import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { createLinkedInGetterWithSearchTool } from "./tools/linkedinGetter";
+import { TavilySearchTool } from "./tools/tavilySearch";
+import { createLinkedInScraperBasic } from "./tools/linkedinScraper";
+
+async function iceBreakWith(name: string): Promise<string> {
+  try {
+    console.log(`🤝 Starting ice breaker for: ${name}`);
+
+    // Use the existing agent to get LinkedIn URL
+    const searchTool = new TavilySearchTool();
+    const linkedinTool = createLinkedInGetterWithSearchTool(searchTool);
+    const linkedinUrl = await linkedinTool._call(name);
+
+    console.log(`🔗 LinkedIn URL found: ${linkedinUrl}`);
+
+    // Use the basic LinkedIn scraper
+    const scraper = createLinkedInScraperBasic();
+    const linkedinDataObj = await scraper._call(linkedinUrl);
+
+    // Use the scraped data as the information
+    const linkedinData = linkedinDataObj;
+
+    // Create summary template
+    const summaryTemplate = `
+    Given the LinkedIn information {information} about a person I want you to create:
+    1. A short summary
+    2. Two interesting facts about them
+    `;
+
+    const summaryPromptTemplate = PromptTemplate.fromTemplate(summaryTemplate);
+
+    // Create LLM
+    const llm = new ChatOpenAI({
+      temperature: 0,
+      modelName: "gpt-3.5-turbo",
+      openAIApiKey: config.openai.API_KEY,
+    });
+
+    // Create chain
+    const chain = summaryPromptTemplate.pipe(llm);
+
+    // Invoke the chain
+    const result = await chain.invoke({
+      information: linkedinData,
+    });
+
+    console.log("📋 Ice Breaker Result:");
+    console.log(result.content);
+
+    return result.content as string;
+  } catch (error) {
+    console.error("❌ Error in ice breaker:", error);
+    return "Error creating ice breaker summary";
+  }
+}
 
 async function main() {
   try {
@@ -8,32 +63,8 @@ async function main() {
 
     validateConfig();
 
-    const { openai } = config;
-    const model = new ChatOpenAI({
-      modelName: openai.MODEL,
-      temperature: openai.TEMPERATURE,
-      openAIApiKey: openai.API_KEY,
-    });
-
-    const summaryTemplate = `
-      given the information {information} about a person I want you to create:
-      1. a short summary
-      2. two interesting facts about the person
-      return a summary of the information
-    `;
-
-    const summaryPromptTemplate = PromptTemplate.fromTemplate(summaryTemplate);
-
-    const promptValue = await summaryPromptTemplate.format({
-      information: `Arnold Alois Schwarzenegger[b] (born July 30, 1947) is an Austrian and American actor, businessman, 
-       former politician, and former professional bodybuilder, known for his roles in high-profile action films.
-       He served as the 38th governor of California from 2003 to 2011.[3]
-       Schwarzenegger began lifting weights at age 15 and won the Mr. Universe title aged 20, 
-       and subsequently the Mr. Olympia title seven times`,
-    });
-
-    const response = await model.invoke(promptValue);
-    console.log(response.content);
+    // Test ice breaker with Walter Fernandez Sanchez
+    await iceBreakWith("Walter Fernandez Sanchez");
   } catch (error) {
     console.error("❌ Error starting application:", error);
     process.exit(1);
