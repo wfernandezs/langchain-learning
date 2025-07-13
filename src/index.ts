@@ -1,43 +1,32 @@
-import { validateConfig } from "./config";
-import { createLinkedInGetterWithSearchTool } from "./tools/linkedinGetter";
-import { TavilySearchTool } from "./tools/tavilySearch";
-import { StructuredOutputParser } from "langchain/output_parsers";
-
-async function iceBreakWith(name: string): Promise<string> {
-  try {
-    console.log(`🤝 Starting ice breaker for: ${name}`);
-
-    // Use the existing agent to get LinkedIn URL
-    const searchTool = new TavilySearchTool();
-    const linkedinTool = createLinkedInGetterWithSearchTool(searchTool);
-    const linkedinUrl = await linkedinTool._call(name);
-
-    // Use StructuredOutputParser to format as JSON
-    const parser = StructuredOutputParser.fromNamesAndDescriptions({
-      name: "The person's name",
-      linkedin: "The LinkedIn profile URL",
-    });
-    const jsonOutput = await parser.parse(
-      `{ "name": "${name}", "linkedin": "${linkedinUrl}" }`
-    );
-
-    console.log("📝 JSON Output:", jsonOutput);
-
-    return JSON.stringify(jsonOutput, null, 2);
-  } catch (error) {
-    console.error("❌ Error in ice breaker:", error);
-    return "Error creating ice breaker summary";
-  }
-}
+import { validateConfig, pinecone, ingestion } from "./config";
+import { ingestTextFileToPinecone } from "./utils/ingestTextFileToPinecone";
 
 async function main() {
   try {
     console.log("🚀 Starting LangChain TypeScript project...");
-
     validateConfig();
 
-    const json = await iceBreakWith("Walter Fernandez Peru");
-    console.log("Final JSON result:\n", json);
+    if (ingestion.TO_PINECONE) {
+      console.log("🔄 INGEST_TO_PINECONE is true. Running ingestion...");
+      if (!ingestion.FILE_PATH) {
+        throw new Error("INGEST_FILE_PATH is not defined.");
+      }
+      await ingestTextFileToPinecone({
+        filePath: ingestion.FILE_PATH,
+        chunkSize: ingestion.CHUNK_SIZE,
+        chunkOverlap: ingestion.CHUNK_OVERLAP,
+        pineconeIndex: pinecone.INDEX,
+      });
+    } else {
+      console.log("⏭️ INGEST_TO_PINECONE is not true. Skipping ingestion.");
+      const { answerWithRetrievalQA } = await import(
+        "./utils/retrievalQAFromPinecone"
+      );
+      const question = "What is Pinecone in machine learning?";
+      console.log(`\n🤖 Running retrieval QA for: ${question}`);
+      const answer = await answerWithRetrievalQA({ query: question });
+      console.log("\n📝 Answer:\n", answer);
+    }
   } catch (error) {
     console.error("❌ Error starting application:", error);
     process.exit(1);
