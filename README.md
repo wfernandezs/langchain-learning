@@ -1,6 +1,6 @@
 # LangChain Learning - TypeScript Project
 
-A TypeScript-based project for learning and experimenting with LangChain.
+A TypeScript-based project for learning and experimenting with LangChain, featuring multiple branches exploring different LangChain capabilities including AI agents, vector databases, and RAG implementations.
 
 ## Prerequisites
 
@@ -100,10 +100,79 @@ npm start
 - ✅ Environment variable management with dotenv
 - ✅ Type-safe configuration validation
 
+## Repository Branches
+
+This repository contains multiple branches, each exploring different LangChain features and use cases:
+
+### Main Branch (`main`)
+The base branch with the foundational TypeScript setup for LangChain development.
+
+**Contents:**
+- Basic TypeScript project structure
+- LangChain core dependencies
+- Environment configuration utilities
+- OpenAI integration setup
+
+### LinkedIn Scraper Branch (`linkedin-scrapper`)
+Explores LangChain agents and tools for web scraping and search functionality.
+
+**Key Features:**
+- ReAct agent implementation ([src/agents/reactAgent.ts](src/agents/reactAgent.ts))
+- Agent examples and patterns ([src/agents/agentExamples.ts](src/agents/agentExamples.ts))
+- LinkedIn profile retrieval tool ([src/tools/linkedinGetter.ts](src/tools/linkedinGetter.ts))
+- Tavily search integration ([src/tools/tavilySearch.ts](src/tools/tavilySearch.ts))
+- Output parsers for structured responses
+
+**Additional Files:**
+- `src/agents/` - Agent implementations
+- `src/tools/` - Custom tools for agents
+
+### Vector DB Learning Branch (`vector-db-learning`)
+Focuses on vector databases and Retrieval-Augmented Generation (RAG) patterns using Pinecone.
+
+**Key Features:**
+- Pinecone vector database integration
+- RAG implementation with context retrieval
+- Text ingestion utilities ([src/utils/ingestTextFileToPinecone.ts](src/utils/ingestTextFileToPinecone.ts))
+- Retrieval QA from Pinecone ([src/utils/retrievalQAFromPinecone.ts](src/utils/retrievalQAFromPinecone.ts))
+- Enhanced configuration for vector DB settings
+
+**Additional Files:**
+- `src/utils/ingestTextFileToPinecone.ts` - Utilities for ingesting documents into Pinecone
+- `src/utils/retrievalQAFromPinecone.ts` - QA retrieval from vector database
+
+**Additional Environment Variables:**
+- Pinecone API configuration
+- Vector DB specific settings
+
+## Exploring Different Branches
+
+To switch between branches and explore different implementations:
+
+```bash
+# Switch to the LinkedIn scraper implementation
+git checkout linkedin-scrapper
+
+# Switch to the vector DB/RAG implementation
+git checkout vector-db-learning
+
+# Return to the main branch
+git checkout main
+```
+
+## Learning Path
+
+For a structured learning experience, consider exploring the branches in this order:
+
+1. **Start with `main`** - Understand the base setup and configuration
+2. **Move to `linkedin-scrapper`** - Learn about LangChain agents, tools, and structured output
+3. **Explore `vector-db-learning`** - Dive into vector databases and RAG patterns
+
 ## Next Steps
 
 - Add more LangChain components and chains
-- Implement your specific use cases
+- Experiment with different agent types and tools
+- Implement custom vector stores and embeddings
 - Add testing with Jest or Vitest
 - Set up linting with ESLint
 - Configure Prettier for code formatting
